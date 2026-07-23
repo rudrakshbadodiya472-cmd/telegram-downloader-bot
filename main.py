@@ -59,7 +59,7 @@ async def download_menu_callback(callback: types.CallbackQuery):
 @dp.callback_query(lambda query: query.data == "subscribe_menu")
 async def subscribe_menu_callback(callback: types.CallbackQuery):
     builder = InlineKeyboardBuilder()
-    builder.button(text="💳 Pay ₹399 Now", url="https://t.me/your_payment_gateway_link") # Replace with actual payment link
+    builder.button(text="💳 Pay ₹399 Now", url="https://t.me/your_payment_gateway_link")
     builder.button(text="⬅️ Back", callback_data="back_to_home")
     builder.adjust(1)
 
@@ -161,6 +161,7 @@ async def download_video(message: types.Message):
 
     output_file = "downloaded_video.mp4"
 
+    # yt-dlp configurations with cookies support to bypass bot checks
     ydl_opts = {
         'format': 'best',
         'outtmpl': output_file,
@@ -169,12 +170,15 @@ async def download_video(message: types.Message):
         'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     }
 
+    # Automatically add cookies file if present in repository
+    if os.path.exists("cookies.txt"):
+        ydl_opts['cookiefile'] = "cookies.txt"
+
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
 
         if os.path.exists(output_file):
-            # Increment user download count upon successful download
             user_limits[user_id]["count"] += 1
             remaining = 3 - user_limits[user_id]["count"]
 
@@ -201,5 +205,5 @@ async def main():
     print("Bot is starting polling...")
     await dp.start_polling(bot)
 
-if __name__ == "__main__":
+In __name__ == "__main__":
     asyncio.run(main())
