@@ -16,10 +16,10 @@ def run_server():
     server = HTTPServer(("0.0.0.0", port), SimpleHandler)
     server.serve_forever()
 
-# Server ko background thread mein start karna taaki bot unaffected rahe
+# Server ko background thread mein start karna
 threading.Thread(target=run_server, daemon=True).start()
 
-# 2. Telegram Bot Setup (Token direct yahan daal diya hai)
+# 2. Telegram Bot Setup
 TOKEN = "8783060174:AAEYx0XU55aO9QJ9s8pU1hf5nZn4heANuJE"
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -32,11 +32,6 @@ async def start_command(message: types.Message):
 async def main():
     print("Bot is starting polling...")
     await dp.start_polling(bot)
-
-if __name__ == "__main__":
-    asyncio.run(main())ng...")
-    await dp.start_polling(bot)
-
 
 if __name__ == "__main__":
     asyncio.run(main())
