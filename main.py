@@ -65,14 +65,17 @@ async def download_video(message: types.Message):
         await message.answer("⚠️ Kripya ek valid URL (link) bhelein.")
         return
 
-    processing_msg = await message.answer("⏳ Video download ho rahi hai, kripya intezaar karein...")
+    processing_msg = await message.answer("⏳ Video download ho rahi hai, kripya intezaار karein...")
 
     output_file = "downloaded_video.mp4"
 
+    # YouTube bot detection bypass options
     ydl_opts = {
         'format': 'best',
         'outtmpl': output_file,
         'noplaylist': True,
+        'extractor_args': {'youtube': {'player_client': ['android', 'web']}},
+        'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     }
 
     try:
@@ -82,7 +85,7 @@ async def download_video(message: types.Message):
 
         if os.path.exists(output_file):
             await message.answer_video(types.FSInputFile(output_file), caption="✅ Yeh lijiye aapki video!")
-            os.remove(output_file) # Bhejne ke baad server se file delete karna
+            os.remove(output_file)
         else:
             await message.answer("❌ Video download karne mein kuch samasya aayi.")
             
@@ -90,7 +93,6 @@ async def download_video(message: types.Message):
         await message.answer(f"❌ Error aayi: {str(e)}")
         
     finally:
-        # Agar file bachi ho toh safe side ke liye delete karna
         if os.path.exists(output_file):
             os.remove(output_file)
         try:
