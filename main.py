@@ -2,6 +2,7 @@ import os
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import threading
 import asyncio
+import yt_dlp
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 from aiogram.utils.keyboard import InlineKeyboardBuilder
@@ -32,7 +33,7 @@ async def start_command(message: types.Message):
     builder = InlineKeyboardBuilder()
     builder.button(text="📥 Download Video", callback_data="download_menu")
     builder.button(text="ℹ️ Help", callback_data="help_menu")
-    builder.adjust(1) # Buttons ko ek ke niche ek rakhne ke liye
+    builder.adjust(1)
 
     await message.answer(
         "👋 **Welcome to Downloader Bot!**\n\nAapko kya karna hai, niche diye gaye options mein se select karein:",
@@ -44,7 +45,7 @@ async def start_command(message: types.Message):
 @dp.callback_query(lambda query: query.data == "download_menu")
 async def download_menu_callback(callback: types.CallbackQuery):
     await callback.message.edit_text(
-        "🔗 Kripya mujhe kisi bhi video ya media ka link bhelein jise aap download karna chahte hain."
+        "🔗 Kripya mujhe YouTube ya kisi bhi supported platform ka link bhelein jise aap download karna chahte hain."
     )
     await callback.answer()
 
@@ -55,10 +56,47 @@ async def help_menu_callback(callback: types.CallbackQuery):
     )
     await callback.answer()
 
-# Text message handler (Jab user link ya koi text bhejega)
+# Text message handler (Jab user link bhejega tab video download karega)
 @dp.message()
-async def handle_message(message: types.Message):
-    await message.answer(f"Aapne link bheja hai: `{message.text}`\n\nAbhi yahan download processing logic active kar sakte hain!", parse_mode="Markdown")
+async def download_video(message: types.Message):
+    url = message.text.strip()
+    
+    if not url.startswith("http"):
+        await message.answer("⚠️ Kripya ek valid URL (link) bhelein.")
+        return
+
+    processing_msg = await message.answer("⏳ Video download ho rahi hai, kripya intezaar karein...")
+
+    output_file = "downloaded_video.mp4"
+
+    ydl_opts = {
+        'format': 'best',
+        'outtmpl': output_file,
+        'noplaylist': True,
+    }
+
+    try:
+        # yt-dlp se video download karna
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
+
+        if os.path.exists(output_file):
+            await message.answer_video(types.FSInputFile(output_file), caption="✅ Yeh lijiye aapki video!")
+            os.remove(output_file) # Bhejne ke baad server se file delete karna
+        else:
+            await message.answer("❌ Video download karne mein kuch samasya aayi.")
+            
+    except Exception as e:
+        await message.answer(f"❌ Error aayi: {str(e)}")
+        
+    finally:
+        # Agar file bachi ho toh safe side ke liye delete karna
+        if os.path.exists(output_file):
+            os.remove(output_file)
+        try:
+            await processing_msg.delete()
+        except:
+            pass
 
 async def main():
     print("Bot is starting polling...")
