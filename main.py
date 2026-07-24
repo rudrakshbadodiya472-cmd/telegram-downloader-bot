@@ -8,7 +8,6 @@ from aiogram.filters import Command
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 # Simple In-Memory Database for Daily Download Limits
-# Structure: {user_id: {"count": int, "date": str}}
 user_limits = {}
 
 # 1. Dummy Web Server (To fix Render port binding error)
@@ -161,8 +160,7 @@ async def download_video(message: types.Message):
 
     output_file = "downloaded_video.mp4"
 
-    # yt-dlp configurations with cookies support to bypass bot checks
-   ydl_opts = {
+    ydl_opts = {
         'format': 'best',
         'outtmpl': output_file,
         'noplaylist': True,
@@ -170,9 +168,6 @@ async def download_video(message: types.Message):
         'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'cookiefile': 'cookies.txt' if os.path.exists("cookies.txt") else None,
     }
-    # Automatically add cookies file if present in repository
-    if os.path.exists("cookies.txt"):
-        ydl_opts['cookiefile'] = "cookies.txt"
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
